@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinyarwanda Number Converter - Complete Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            min-height: 50px;
+            word-wrap: break-word;
+        }
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .example-item {
+            margin: 5px 0;
+            padding: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #d1ecf1;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kinyarwanda Number Converter</h1>
+        
+        <div class="info">
+            Enter any number up to 15 digits (trillions). The converter handles all Kinyarwanda number patterns including irregular forms.
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="numberInput" placeholder="Enter a number (e.g., 1234567890)" maxlength="15">
+            <button onclick="convertNumber()">Convert to Kinyarwanda</button>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <!-- <div class="examples">
+            <h3>Test Examples:</h3>
+            <div id="testResults"></div>
+        </div> -->
+    </div>
+
+    <script>
+        // Complete Kinyarwanda number converter with all patterns
+        
+        // Base numbers 0-9
+        const ones = {
+            0: 'zeru',
+            1: 'rimwe',
+            2: 'kabiri',
+            3: 'gatatu',
+            4: 'kane',
+            5: 'gatanu',
+            6: 'gatandatu',
+            7: 'karindwi',
+            8: 'umunani',
+            9: 'icyenda'
+        };
+        
+        // Numbers 10-19
+        const teens = {
+            10: 'icumi',
+            11: 'cumi na rimwe',
+            12: 'cumi na kabiri',
+            13: 'cumi na gatatu',
+            14: 'cumi na kane',
+            15: 'cumi na gatanu',
+            16: 'cumi na gatandatu',
+            17: 'cumi na karindwi',
+            18: "cumi n'umunani",
+            19: "cumi n'icyenda"
+        };
+        
+        // Tens (20-90)
+        const tens = {
+            20: 'makumyabiri',
+            30: 'mirongo itatu',
+            40: 'mirongo ine',
+            50: 'mirongo itanu',
+            60: 'mirongo itandatu',
+            70: 'mirongo irindwi',
+            80: 'mirongo inani',
+            90: 'mirongo cyenda'
+        };
+        
+        // Hundreds (100-900)
+        const hundreds = {
+            100: 'ijana',
+            200: 'magana abiri',
+            300: 'magana atatu',
+            400: 'magana ane',
+            500: 'magana atanu',
+            600: 'magana tandatu',
+            700: 'magana arindwi',
+            800: 'magana inani',
+            900: 'magana cyenda'
+        };
+        
+        // Special forms for thousands (used after ibihumbi)
+        const thousandsForms = {
+            1: 'kimwe',      // only for exactly 1000
+            2: 'bibiri',
+            3: 'bitatu',
+            4: 'bine',
+            5: 'bitanu',
+            6: 'bitandatu',
+            7: 'birindwi',
+            8: 'umunani',    // no change
+            9: 'icyenda'     // no change
+        };
+        
+        // Special forms for millions
+        const millionsForms = {
+            1: 'imwe',
+            2: 'ebyiri',
+            3: 'eshatu',
+            4: 'enye',
+            5: 'eshanu',
+            6: 'esheshatu',
+            7: 'zirindwi',
+            8: 'umunani',
+            9: 'icyenda'
+        };
+        
+        // Special forms for billions (same as millions)
+        const billionsForms = {
+            1: 'imwe',
+            2: 'ebyiri',
+            3: 'eshatu',
+            4: 'enye',
+            5: 'eshanu',
+            6: 'esheshatu',
+            7: 'zirindwi',
+            8: 'umunani',
+            9: 'icyenda'
+        };
+        
+        // Special forms for trillions (same pattern)
+        const trillionsForms = {
+            1: 'imwe',
+            2: 'ebyiri',
+            3: 'eshatu',
+            4: 'enye',
+            5: 'eshanu',
+            6: 'esheshatu',
+            7: 'zirindwi',
+            8: 'umunani',
+            9: 'icyenda'
+        };
+        
+        // Helper function to handle "na" vs "n'" rule
+        function addConnector(current, next) {
+            if (!next) return current;
+            
+            // Check if next starts with a vowel
+            const startsWithVowel = /^[aeiou]/i.test(next);
+            
+            if (startsWithVowel) {
+                return current + " n'" + next;
+            } else {
+                return current + ' na ' + next;
+            }
+        }
+        
+        // Convert numbers less than 100
+        function convertUnderHundred(num) {
+            if (num < 10) return ones[num];
+            if (num < 20) return teens[num];
+            
+            const tensPlace = Math.floor(num / 10) * 10;
+            const onesPlace = num % 10;
+            
+            if (onesPlace === 0) return tens[tensPlace];
+            
+            return addConnector(tens[tensPlace], ones[onesPlace]);
+        }
+        
+        // Convert numbers less than 1000
+        function convertUnderThousand(num) {
+            if (num < 100) return convertUnderHundred(num);
+            
+            const hundredsPlace = Math.floor(num / 100) * 100;
+            const remainder = num % 100;
+            
+            if (remainder === 0) return hundreds[hundredsPlace];
+            
+            const remainderText = convertUnderHundred(remainder);
+            return addConnector(hundreds[hundredsPlace], remainderText);
+        }
+        
+        // Convert the thousands portion (for use after "ibihumbi")
+        function convertThousandsPortion(num) {
+            // For numbers in thousands, we need special handling
+            if (num === 1) return 'kimwe';
+            
+            if (num < 10 && thousandsForms[num]) {
+                return thousandsForms[num];
+            }
+            
+            if (num < 100) {
+                const result = convertUnderHundred(num);
+                // Replace ones with thousands forms where applicable
+                if (num % 10 !== 0 && num % 10 <= 7) {
+                    const onesDigit = num % 10;
+                    return result.replace(ones[onesDigit], thousandsForms[onesDigit] || ones[onesDigit]);
+                }
+                return result;
+            }
+            
+            return convertUnderThousand(num);
+        }
+        
+        // Main conversion function
+        function numberToKinyarwanda(num) {
+            // Convert string to number and validate
+            num = parseInt(num.toString().replace(/,/g, ''));
+            
+            if (isNaN(num) || num < 0) return 'Invalid number';
+            if (num === 0) return 'zeru';
+            
+            // Handle trillions (1,000,000,000,000+)
+            if (num >= 1000000000000) {
+                const trillions = Math.floor(num / 1000000000000);
+                const remainder = num % 1000000000000;
+                
+                let result = 'tiriyoni ';
+                if (trillions < 10 && trillionsForms[trillions]) {
+                    result += trillionsForms[trillions];
+                } else {
+                    result += convertUnderThousand(trillions);
+                }
+                
+                if (remainder > 0) {
+                    result = addConnector(result, numberToKinyarwanda(remainder));
+                }
+                return result;
+            }
+            
+            // Handle billions (1,000,000,000+)
+            if (num >= 1000000000) {
+                const billions = Math.floor(num / 1000000000);
+                const remainder = num % 1000000000;
+                
+                let result = 'biriyoni ';
+                if (billions < 10 && billionsForms[billions]) {
+                    result += billionsForms[billions];
+                } else {
+                    result += convertUnderThousand(billions);
+                }
+                
+                if (remainder > 0) {
+                    result = addConnector(result, numberToKinyarwanda(remainder));
+                }
+                return result;
+            }
+            
+            // Handle millions (1,000,000+)
+            if (num >= 1000000) {
+                const millions = Math.floor(num / 1000000);
+                const remainder = num % 1000000;
+                
+                let result = 'miliyoni ';
+                if (millions < 10 && millionsForms[millions]) {
+                    result += millionsForms[millions];
+                } else {
+                    result += convertUnderThousand(millions);
+                }
+                
+                if (remainder > 0) {
+                    result = addConnector(result, numberToKinyarwanda(remainder));
+                }
+                return result;
+            }
+            
+            // Handle thousands (1,000+)
+            if (num >= 1000) {
+                const thousands = Math.floor(num / 1000);
+                const remainder = num % 1000;
+                
+                let result = 'ibihumbi ';
+                if (thousands === 1) {
+                    result = 'igihumbi kimwe';
+                } else {
+                    result += convertThousandsPortion(thousands);
+                }
+                
+                if (remainder > 0) {
+                    result = addConnector(result, convertUnderThousand(remainder));
+                }
+                return result;
+            }
+            
+            // Handle under 1000
+            return convertUnderThousand(num);
+        }
+        
+        function convertNumber() {
+            const input = document.getElementById('numberInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!input) {
+                resultDiv.innerHTML = '<span class="error">Please enter a number</span>';
+                return;
+            }
+            
+            // Format the input number with commas for display
+            const num = input.replace(/,/g, '');
+            const formattedNum = parseInt(num).toLocaleString();
+            
+            const result = numberToKinyarwanda(num);
+            resultDiv.innerHTML = `<strong>${formattedNum}</strong> = <span class="success">${result}</span>`;
+        }
+        
+        // Test with examples
+        function runTests() {
+            const testCases = [
+                // Basic numbers
+                [23, "makumyabiri na gatatu"],
+                [18, "cumi n'umunani"],
+                [13, "cumi na gatatu"],
+                
+                // Hundreds
+                [100, "ijana"],
+                [200, "magana abiri"],
+                [600, "magana tandatu"],
+                
+                // Thousands
+                [1000, "igihumbi kimwe"],
+                [2000, "ibihumbi bibiri"],
+                [7000, "ibihumbi birindwi"],
+                [8000, "ibihumbi umunani"],
+                [9000, "ibihumbi icyenda"],
+                [10000, "ibihumbi icumi"],
+                [12000, "ibihumbi icumi na bibiri"],
+                [20000, "ibihumbi makumyabiri"],
+                [25000, "ibihumbi makumyabiri na bitanu"],
+                
+                // Complex thousands
+                [1327, "igihumbi kimwe na magana atatu na makumyabiri na karindwi"],
+                [9489, "ibihumbi icyenda na magana ane na mirongo inani n'icyenda"],
+                [41863, "ibihumbi mirongo ine na rimwe na magana inani na mirongo itandatu na gatatu"],
+                [97472, "ibihumbi mirongo cyenda na karindwi na magana ane na mirongo irindwi na kabiri"],
+                
+                // Hundred thousands
+                [100000, "ibihumbi ijana"],
+                [200000, "ibihumbi magana abiri"],
+                [250000, "ibihumbi magana abiri na mirongo itanu"],
+                [476962, "ibihumbi magana ane na mirongo irindwi na gatandatu na magana cyenda na mirongo itandatu na kabiri"],
+                
+                // Millions
+                [1000000, "miliyoni imwe"],
+                [2000000, "miliyoni ebyiri"],
+                [5000000, "miliyoni eshanu"],
+                [8000000, "miliyoni umunani"],
+                [4308920, "miliyoni enye n'ibihumbi magana atatu n'umunani na magana cyenda na makumyabiri"],
+                
+                // Billions
+                [1000000000, "biriyoni imwe"],
+                [5000000000, "biriyoni eshanu"],
+                
+                // Trillions
+                [1000000000000, "tiriyoni imwe"],
+                [76203469882123, "tiriyoni mirongo irindwi n'esheshatu na biriyoni magana abiri na gatatu na miliyoni magana ane na mirongo itandatu n'icyenda n'ibihumbi magana inani na mirongo inani na kabiri n'ijana na makumyabiri na gatatu"]
+            ];
+            
+            let html = '';
+            let passCount = 0;
+            
+            for (const [num, expected] of testCases) {
+                const result = numberToKinyarwanda(num);
+                const isCorrect = result === expected;
+                if (isCorrect) passCount++;
+                
+                html += `<div class="example-item ${isCorrect ? 'success' : 'error'}">
+                    ${num.toLocaleString()} = ${result} ${isCorrect ? '✓' : `✗<br>Expected: ${expected}`}
+                </div>`;
+            }
+            
+            html = `<div>Passed: ${passCount}/${testCases.length} tests</div><hr>` + html;
+            document.getElementById('testResults').innerHTML = html;
+        }
+        
+        // Run tests on load
+        window.onload = runTests;
+        
+        // Allow Enter key to convert
+        document.getElementById('numberInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') convertNumber();
+        });
+        
+        // Format input as user types
+        document.getElementById('numberInput').addEventListener('input', function(e) {
+            // Remove non-numeric characters except commas
+            this.value = this.value.replace(/[^\d,]/g, '');
+        });
+    </script>
+</body>
+</html>
